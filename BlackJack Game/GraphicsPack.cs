@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +9,7 @@ namespace BlackJack_Game
 {
     internal class GraphicsPack
     {
-        // Method to print the welcome screen
+        // Shows the welcome screen with game title and starting info
         public void PrintWelcomeScreen(int startingBalance, int minimumBet)
         {
             Console.Clear();
@@ -33,8 +33,6 @@ namespace BlackJack_Game
                     | $$    $$| $$ \$$    $$ \$$     \| $$  \$$\\$$    $$ \$$    $$ \$$     \| $$  \$$\
                      \$$$$$$$  \$$  \$$$$$$$  \$$$$$$$ \$$   \$$ \$$$$$$   \$$$$$$$  \$$$$$$$ \$$   \$$
 ");
-
-
 
             Console.SetCursorPosition(42, 22);
             Console.ForegroundColor = ConsoleColor.White;
@@ -64,7 +62,7 @@ namespace BlackJack_Game
             Console.Clear();
         }
 
-        // Method to print game instructions
+        // Shows the game rules and instructions
         public void PrintInstructions()
         {
             Console.OutputEncoding = Encoding.UTF8;
@@ -137,34 +135,117 @@ namespace BlackJack_Game
             Console.ReadKey();
         }
 
-        // Method to print a card in ASCII art
+        // Prints a single card 
         public void PrintCard(Cards card)
         {
-            string rank = card.GetRank();
-            string suitSymbol = GetSuitSymbol(card.GetSuit());
+            if (card == null) return;
 
-            // Set color based on suit
-            if (card.GetSuit() == "Hearts" || card.GetSuit() == "Diamonds")
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.White;
-            }
+            string rank = card.GetRank();
+            string suit = GetSuitSymbol(card.GetSuit());
 
             Console.WriteLine("┌─────────┐");
             Console.WriteLine($"│{rank,-2}       │");
             Console.WriteLine("│         │");
-            Console.WriteLine($"│    {suitSymbol}    │");
+            Console.WriteLine($"│    {suit}    │");
             Console.WriteLine("│         │");
             Console.WriteLine($"│       {rank,-2}│");
             Console.WriteLine("└─────────┘");
-
-            Console.ResetColor();
         }
 
-        // Helper method to get suit symbol
+        // Prints multiple cards horizontally with optional hiding of the second card
+        public void PrintCardsHorizontally(Cards[] cards, bool hideSecondCard = false, int delayMs = 500)
+        {
+            if (cards == null || cards.Length == 0) return;
+
+            // Each card is 7 lines tall
+            int cardHeight = 7;
+            string[] cardLines = new string[cardHeight];
+
+            // Loop through each card
+            for (int i = 0; i < cards.Length; i++)
+            {
+                // Skip null cards
+                if (cards[i] == null) continue;
+
+                // ⏱️ Animation: Wait before showing next card
+                if (i > 0 && delayMs > 0)
+                {
+                    Thread.Sleep(delayMs);
+                }
+
+                string rank = cards[i].GetRank();
+                string suit = GetSuitSymbol(cards[i].GetSuit());
+
+                //  Check if this card should be hidden (face-down)
+                if (i == 1 && hideSecondCard)
+                {
+                    // Create a face-down card with shaded pattern
+                    string[] hiddenCard = new string[]
+                    {
+                        "┌─────────┐",
+                        "│░░░░░░░░░│",
+                        "│░░░░░░░░░│",
+                        "│░░░░░░░░░│",
+                        "│░░░░░░░░░│",
+                        "│░░░░░░░░░│",
+                        "└─────────┘"
+                    };
+
+                    // Add this card to our display, line by line
+                    for (int line = 0; line < cardHeight; line++)
+                    {
+                        if (string.IsNullOrEmpty(cardLines[line]))
+                            cardLines[line] = hiddenCard[line];
+                        else
+                            cardLines[line] += "  " + hiddenCard[line]; // 2 spaces between cards
+                    }
+                }
+                else
+                {
+                    // 🃏 Create a normal face-up card
+                    string[] currentCard = new string[]
+                    {
+                        "┌─────────┐",
+                        $"│{rank,-2}       │",
+                        "│         │",
+                        $"│    {suit}    │",
+                        "│         │",
+                        $"│       {rank,-2}│",
+                        "└─────────┘"
+                    };
+
+                    // Add this card to our display, line by line
+                    for (int line = 0; line < cardHeight; line++)
+                    {
+                        if (string.IsNullOrEmpty(cardLines[line]))
+                            cardLines[line] = currentCard[line];
+                        else
+                            cardLines[line] += "  " + currentCard[line]; // 2 spaces between cards
+                    }
+                }
+
+                //  Display the cards (moves cursor back up if not first card)
+                Console.SetCursorPosition(0, Console.CursorTop - (i > 0 ? cardHeight : 0));
+                foreach (string line in cardLines)
+                {
+                    Console.WriteLine(line);
+                }
+            }
+        }
+
+        // Prints a single face-down card
+        public void PrintHiddenCard()
+        {
+            Console.WriteLine("┌─────────┐");
+            Console.WriteLine("│░░░░░░░░░│");
+            Console.WriteLine("│░░░░░░░░░│");
+            Console.WriteLine("│░░░░░░░░░│");
+            Console.WriteLine("│░░░░░░░░░│");
+            Console.WriteLine("│░░░░░░░░░│");
+            Console.WriteLine("└─────────┘");
+        }
+
+        // Converts suit name to symbol (♥ ♦ ♣ ♠)
         private string GetSuitSymbol(string suit)
         {
             switch (suit)
