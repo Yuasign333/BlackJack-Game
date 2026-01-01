@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using System.Threading;
 
@@ -6,25 +6,30 @@ namespace BlackJack_Game
 {
     internal class Program
     {
+        // Entry point - One Call Method
         static void Main(string[] args)
-        {
-            Console.OutputEncoding = Encoding.UTF8;
+        {       
             StartSystem();
         }
 
+        //  Main game loop - runs the entire blackjack game
         static void StartSystem()
         {
+            Console.OutputEncoding = Encoding.UTF8; //  Enable UTF-8 for card symbols
+
             GraphicsPack graphics = new GraphicsPack();
             Player player = new Player();
 
+            // Show welcome screen and rules
             graphics.PrintWelcomeScreen(player.GetMoneyBalance(), player.GetMinimumBet());
             graphics.PrintInstructions();
 
             bool keepPlaying = true;
 
+            // Keep playing rounds until player quits or runs out of money
             while (keepPlaying && player.GetMoneyBalance() > 0)
             {
-                // Check if player has money
+                //  Check if player has money
                 if (player.GetMoneyBalance() <= 0)
                 {
                     Console.Clear();
@@ -36,7 +41,7 @@ namespace BlackJack_Game
                     break;
                 }
 
-                // Display current balance
+                //  Display current balance
                 Console.Clear();
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("\n╔════════════════════════════════════════╗");
@@ -44,7 +49,7 @@ namespace BlackJack_Game
                 Console.WriteLine("╚════════════════════════════════════════╝");
                 Console.ResetColor();
 
-                // Get bet amount
+                //  Get bet amount from player
                 int bet = GetBetAmount(player, player.GetMinimumBet());
 
                 if (bet == 0)
@@ -52,21 +57,21 @@ namespace BlackJack_Game
                     break; // Player chose to quit
                 }
 
-                // Create new deck and dealer for each round
+                //  Create new deck and dealer for this round
                 Deck deck = new Deck();
                 Computer_Dealer dealer = new Computer_Dealer();
 
-                // Reset hands
+                //  Reset hands for new round
                 player.ResetHand();
                 dealer.ResetHand();
 
-                // Initial deal
+                //  Initial deal - 2 cards each
                 player.DrawCard(deck);
                 dealer.DrawCard(deck);
                 player.DrawCard(deck);
                 dealer.DrawCard(deck);
 
-                // Show initial hands
+                //  Show initial hands (with animation!)
                 DisplayInitialHands(player, dealer, graphics);
 
                 // Player's turn
@@ -79,13 +84,13 @@ namespace BlackJack_Game
                     dealerBusted = DealerTurn(dealer, deck, graphics);
                 }
 
-                // Show final hands
+                //  Show final hands
                 DisplayFinalHands(player, dealer, graphics);
 
-                // Determine winner and update balance
+                //  Determine winner and update balance
                 DetermineWinner(player, dealer, bet, playerBusted, dealerBusted);
 
-                // Ask to play again
+                //  Ask to play again
                 if (player.GetMoneyBalance() > 0)
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
@@ -94,9 +99,14 @@ namespace BlackJack_Game
                     string choice = Console.ReadLine().ToLower();
                     keepPlaying = (choice == "y" || choice == "yes");
                 }
+                else
+                {
+                    Console.WriteLine("\nPress any key to continue...");
+                    Console.ReadKey();
+                }
             }
 
-            // Game over screen
+            //  Game over screen
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("\n╔════════════════════════════════════════╗");
@@ -108,21 +118,26 @@ namespace BlackJack_Game
             Console.ReadKey();
         }
 
+        //  Gets valid bet amount from player
         static int GetBetAmount(Player player, int minimumBet)
         {
             while (true)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write($"\nEnter your bet amount (${minimumBet} - ${player.GetMoneyBalance()}) or 0 to quit: $");
-                Console.ResetColor();
-
+       
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 if (int.TryParse(Console.ReadLine(), out int bet))
                 {
-                    if (bet == 0) return 0;
-                    if (bet >= minimumBet && bet <= player.GetMoneyBalance())
+                    if (bet == 0)
                     {
-                        return bet;
+                        return 0; // Player wants to quit
                     }
+                    else if (bet >= minimumBet && bet <= player.GetMoneyBalance()) // Valid bet range
+                    {
+                        return bet; // Valid bet!
+                    }
+                    Console.ResetColor();
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Invalid bet! Must be between ${minimumBet} and ${player.GetMoneyBalance()}");
                     Console.ResetColor();
@@ -136,6 +151,7 @@ namespace BlackJack_Game
             }
         }
 
+        //  Shows the initial deal (2 cards each, dealer's 2nd card hidden)
         static void DisplayInitialHands(Player player, Computer_Dealer dealer, GraphicsPack graphics)
         {
             Console.Clear();
@@ -143,34 +159,28 @@ namespace BlackJack_Game
             Console.WriteLine("\n═══════════════════════ INITIAL DEAL ═══════════════════════\n");
             Console.ResetColor();
 
+            //  Show dealer's cards (second card is hidden)
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("DEALER'S HAND:");
             Console.ResetColor();
-            graphics.PrintCard(dealer.GetComputerHand().GetCards()[0]);
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine("\n[Hidden Card]");
-            Console.ResetColor();
+            graphics.PrintCardsHorizontally(dealer.GetComputerHand().GetCards(), hideSecondCard: true, delayMs: 1500); // print with delay
 
             Console.WriteLine("\n");
 
+            //  Show player's cards (all visible)
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("YOUR HAND:");
             Console.ResetColor();
-            foreach (Cards card in player.GetPlayerHand().GetCards())
-            {
-                if (card != null)
-                {
-                    graphics.PrintCard(card);
-                    Console.WriteLine();
-                }
-            }
+            graphics.PrintCardsHorizontally(player.GetPlayerHand().GetCards(), hideSecondCard: false, delayMs: 1500); // print with delay
+
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($"═══ Total: {player.GetPlayerHand().GetTotal()} ═══");
+            Console.WriteLine($"\n═══ Total: {player.GetPlayerHand().GetTotal()} ═══");
             Console.ResetColor();
 
-            Thread.Sleep(1500);
+            Thread.Sleep(1000); // Pause to let player see the cards
         }
 
+        // 🎮 Player's turn - hit or stand
         static bool PlayerTurn(Player player, Computer_Dealer dealer, Deck deck, GraphicsPack graphics)
         {
             while (true)
@@ -180,40 +190,35 @@ namespace BlackJack_Game
                 Console.WriteLine("\n═══════════════════════ YOUR TURN ═══════════════════════\n");
                 Console.ResetColor();
 
+                //  Show dealer's cards (second card still hidden)
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("DEALER'S HAND:");
                 Console.ResetColor();
-                graphics.PrintCard(dealer.GetComputerHand().GetCards()[0]);
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine("\n[Hidden Card]");
-                Console.ResetColor();
+                graphics.PrintCardsHorizontally(dealer.GetComputerHand().GetCards(), hideSecondCard: true, delayMs: 0);
 
                 Console.WriteLine("\n");
 
+                //  Show player's cards
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("YOUR HAND:");
                 Console.ResetColor();
-                foreach (Cards card in player.GetPlayerHand().GetCards())
-                {
-                    if (card != null)
-                    {
-                        graphics.PrintCard(card);
-                        Console.WriteLine();
-                    }
-                }
+                graphics.PrintCardsHorizontally(player.GetPlayerHand().GetCards(), hideSecondCard: false, delayMs: 0);
+
                 Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"═══ Total: {player.GetPlayerHand().GetTotal()} ═══");
+                Console.WriteLine($"\n═══ Total: {player.GetPlayerHand().GetTotal()} ═══");
                 Console.ResetColor();
 
+                //  Check if player busted
                 if (player.GetPlayerHand().GetTotal() > 21)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("\n💥 BUST! You went over 21!");
                     Console.ResetColor();
-                    Thread.Sleep(2000);
-                    return true;
+                    Thread.Sleep(4500);
+                    return true; // Player busted
                 }
 
+                //  Ask player to hit or stand
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.Write("\n[H]it or [S]tand? ");
                 Console.ResetColor();
@@ -221,11 +226,11 @@ namespace BlackJack_Game
 
                 if (choice == "h" || choice == "hit")
                 {
-                    player.DrawCard(deck);
+                    player.DrawCard(deck); // Draw another card
                 }
                 else if (choice == "s" || choice == "stand")
                 {
-                    return false;
+                    return false; // Player stands, didn't bust
                 }
                 else
                 {
@@ -237,6 +242,7 @@ namespace BlackJack_Game
             }
         }
 
+        // Dealer's turn - must hit until 17 or higher
         static bool DealerTurn(Computer_Dealer dealer, Deck deck, GraphicsPack graphics)
         {
             Console.Clear();
@@ -249,31 +255,34 @@ namespace BlackJack_Game
             Console.ResetColor();
             Thread.Sleep(1500);
 
+            // Dealer must hit until 17+
             while (dealer.GetComputerHand().GetTotal() < 17)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"Dealer has {dealer.GetComputerHand().GetTotal()}. Dealer must hit...\n");
                 Console.ResetColor();
                 dealer.DrawCard(deck);
-                Thread.Sleep(1500);
+                Thread.Sleep(3000);
             }
 
+            // Check if dealer busted
             if (dealer.GetComputerHand().GetTotal() > 21)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("💥 Dealer BUSTS!");
                 Console.ResetColor();
-                Thread.Sleep(2000);
-                return true;
+                Thread.Sleep(3000);
+                return true; // Dealer busted
             }
 
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine($"Dealer stands at {dealer.GetComputerHand().GetTotal()}");
             Console.ResetColor();
-            Thread.Sleep(2000);
-            return false;
+            Thread.Sleep(3500);
+            return false; // Dealer didn't bust
         }
 
+        // Shows final hands of both player and dealer
         static void DisplayFinalHands(Player player, Computer_Dealer dealer, GraphicsPack graphics)
         {
             Console.Clear();
@@ -281,39 +290,30 @@ namespace BlackJack_Game
             Console.WriteLine("\n═══════════════════════ FINAL HANDS ═══════════════════════\n");
             Console.ResetColor();
 
+            // Show dealer's final hand (all cards revealed)
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("DEALER'S FINAL HAND:");
             Console.ResetColor();
-            foreach (Cards card in dealer.GetComputerHand().GetCards())
-            {
-                if (card != null)
-                {
-                    graphics.PrintCard(card);
-                    Console.WriteLine();
-                }
-            }
+            graphics.PrintCardsHorizontally(dealer.GetComputerHand().GetCards(), hideSecondCard: false, delayMs: 2000);
+
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($"═══ Dealer Total: {dealer.GetComputerHand().GetTotal()} ═══");
+            Console.WriteLine($"\n═══ Dealer Total: {dealer.GetComputerHand().GetTotal()} ═══");
             Console.ResetColor();
 
             Console.WriteLine("\n");
 
+            // Show player's final hand
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("YOUR FINAL HAND:");
             Console.ResetColor();
-            foreach (Cards card in player.GetPlayerHand().GetCards())
-            {
-                if (card != null)
-                {
-                    graphics.PrintCard(card);
-                    Console.WriteLine();
-                }
-            }
+            graphics.PrintCardsHorizontally(player.GetPlayerHand().GetCards(), hideSecondCard: false, delayMs: 2000);
+
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine($"═══ Your Total: {player.GetPlayerHand().GetTotal()} ═══");
+            Console.WriteLine($"\n═══ Your Total: {player.GetPlayerHand().GetTotal()} ═══");
             Console.ResetColor();
         }
 
+        // Determines winner and updates player's balance
         static void DetermineWinner(Player player, Computer_Dealer dealer, int bet, bool playerBusted, bool dealerBusted)
         {
             Console.WriteLine("\n");
@@ -324,6 +324,7 @@ namespace BlackJack_Game
             int playerTotal = player.GetPlayerHand().GetTotal();
             int dealerTotal = dealer.GetComputerHand().GetTotal();
 
+            // Player busted
             if (playerBusted)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -332,6 +333,7 @@ namespace BlackJack_Game
                 Console.ResetColor();
                 player.LoseBet(bet);
             }
+            // Dealer busted
             else if (dealerBusted)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
@@ -340,6 +342,7 @@ namespace BlackJack_Game
                 Console.ResetColor();
                 player.WinBet(bet);
             }
+            // Player has higher total
             else if (playerTotal > dealerTotal)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
@@ -348,6 +351,7 @@ namespace BlackJack_Game
                 Console.ResetColor();
                 player.WinBet(bet);
             }
+            // Dealer has higher total
             else if (playerTotal < dealerTotal)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -356,6 +360,7 @@ namespace BlackJack_Game
                 Console.ResetColor();
                 player.LoseBet(bet);
             }
+            // Tie (Push)
             else
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -364,9 +369,12 @@ namespace BlackJack_Game
                 Console.ResetColor();
             }
 
+            // Show new balance
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine($"\nNew Balance: ${player.GetMoneyBalance()}");
             Console.ResetColor();
+
+         
         }
     }
 }
