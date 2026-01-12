@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -12,7 +13,7 @@ namespace BlackJack_Game
     {
         // Entry point - One Call Method
         static void Main(string[] args)
-        {       
+        {
             StartSystem();
         }
 
@@ -129,7 +130,7 @@ namespace BlackJack_Game
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write($"\nEnter your bet amount (${minimumBet} - ${player.GetMoneyBalance()}) or 0 to quit: $");
-       
+
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 if (int.TryParse(Console.ReadLine(), out int bet))
                 {
@@ -143,8 +144,19 @@ namespace BlackJack_Game
                     }
                     Console.ResetColor();
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Invalid bet! Must be between ${minimumBet} and ${player.GetMoneyBalance()}");
+                    Console.WriteLine($"\nInvalid bet! Must be between ${minimumBet} and ${player.GetMoneyBalance()}");
+                    Console.ReadKey();
+                    Console.Clear();
                     Console.ResetColor();
+
+                    //  Display again the current balance
+                    Console.Clear();
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("\n╔════════════════════════════════════════╗");
+                    Console.WriteLine($"║   Current Balance: ${player.GetMoneyBalance()}");
+                    Console.WriteLine("╚════════════════════════════════════════╝");
+                    Console.ResetColor();
+
                 }
                 else
                 {
@@ -378,7 +390,7 @@ namespace BlackJack_Game
             Console.WriteLine($"\nNew Balance: ${player.GetMoneyBalance()}");
             Console.ResetColor();
 
-         
+
         }
     }
 }
