@@ -46,13 +46,6 @@ namespace BlackJack_Game
                     break;
                 }
 
-                //  Display current balance
-                Console.Clear();
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("\n╔════════════════════════════════════════╗");
-                Console.WriteLine($"║   Current Balance: ${player.GetMoneyBalance()}");
-                Console.WriteLine("╚════════════════════════════════════════╝");
-                Console.ResetColor();
 
                 //  Get bet amount from player
                 int bet = GetBetAmount(player, player.GetMinimumBet());
@@ -128,6 +121,15 @@ namespace BlackJack_Game
         {
             while (true)
             {
+
+                //  Display current balance
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("\n╔════════════════════════════════════════╗");
+                Console.WriteLine($"║   Current Balance: ${player.GetMoneyBalance()}");
+                Console.WriteLine("╚════════════════════════════════════════╝");
+                Console.ResetColor();
+
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.Write($"\nEnter your bet amount (${minimumBet} - ${player.GetMoneyBalance()}) or 0 to quit: $");
 
@@ -145,27 +147,26 @@ namespace BlackJack_Game
                     Console.ResetColor();
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"\nInvalid bet! Must be between ${minimumBet} and ${player.GetMoneyBalance()}");
+                    Console.ResetColor();
                     Console.ReadKey();
                     Console.Clear();
-                    Console.ResetColor();
+                    continue;
 
-                    //  Display again the current balance
-                    Console.Clear();
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("\n╔════════════════════════════════════════╗");
-                    Console.WriteLine($"║   Current Balance: ${player.GetMoneyBalance()}");
-                    Console.WriteLine("╚════════════════════════════════════════╝");
-                    Console.ResetColor();
-
+            
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Please enter a valid number!");
+                    Console.WriteLine("\nPlease enter a valid number!");
+                    Console.ReadKey();
                     Console.ResetColor();
+                    Console.Clear();
+                    continue;
                 }
             }
         }
+
+      
 
         //  Shows the initial deal (2 cards each, dealer's 2nd card hidden)
         static void DisplayInitialHands(Player player, Computer_Dealer dealer, GraphicsPack graphics)
@@ -385,10 +386,12 @@ namespace BlackJack_Game
                 Console.ResetColor();
             }
 
+
             // Show new balance
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine($"\nNew Balance: ${player.GetMoneyBalance()}");
             Console.ResetColor();
+            
 
 
         }
